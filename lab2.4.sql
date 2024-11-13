@@ -1,5 +1,5 @@
 -- eXERCISE 2.1: queries to join the orders, products, and customers tables
-EXPLAIN select * from orders
+select * from orders
 inner join customers
 on orders.customer_id = customers.customer_id
 inner join products
@@ -214,8 +214,37 @@ BEGIN
 END$$
 
 DELIMITER ;
-    
-use shopease;
+
+DELIMITER $$
+
+CREATE PROCEDURE UpdateCustomerStatus(IN input_customer_id INT)
+BEGIN
+    DECLARE total_order_value DECIMAL(10, 2);
+
+    -- Calculate total order value for the given customer
+    SELECT SUM(order_revenue) INTO total_order_value
+    FROM orders
+    WHERE customer_id = input_customer_id;
+
+    -- Check if total_order_value is NULL (no orders) and set it to 0
+    IF total_order_value IS NULL THEN
+        SET total_order_value = 0;
+    END IF;
+
+    -- Update customer status based on total order value
+    IF total_order_value > 1000 THEN
+        UPDATE customers
+        SET status = 'VIP'
+        WHERE customer_id = input_customer_id;
+    ELSE
+        UPDATE customers
+        SET status = 'Regular'
+        WHERE customer_id = input_customer_id;
+    END IF;
+END$$
+
+DELIMITER ;
+
 
 select * from inventors;
 select * from suppliers_data;
